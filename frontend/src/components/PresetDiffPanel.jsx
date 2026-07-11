@@ -29,7 +29,7 @@ export default function PresetDiffPanel({ kind, name }) {
 
   if (!name) return null;
   if (error) return <div className="status-line error">{error}</div>;
-  if (!resolved || !raw) return <div className="empty">Chargement des réglages…</div>;
+  if (!resolved || !raw) return <div className="empty">Loading settings…</div>;
 
   const ownKeys = new Set(Object.keys(raw));
   const skipKeys = new Set(["name", "from", "version", "inherits"]);
@@ -46,7 +46,7 @@ export default function PresetDiffPanel({ kind, name }) {
     <div className="diff-panel">
       {raw.inherits && (
         <div className="diff-row inherited">
-          <span className="diff-key">hérite de</span>
+          <span className="diff-key">inherits from</span>
           <span className="diff-value">{raw.inherits}</span>
         </div>
       )}

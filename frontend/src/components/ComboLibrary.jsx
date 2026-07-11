@@ -25,7 +25,7 @@ export default function ComboLibrary({ combos, spools, nozzles, onEdit, onDelete
     <div>
       <div className="filters">
         <select value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
-          <option value="">Toutes matières</option>
+          <option value="">All materials</option>
           {materials.map((m) => (
             <option key={m} value={m}>
               {m}
@@ -33,7 +33,7 @@ export default function ComboLibrary({ combos, spools, nozzles, onEdit, onDelete
           ))}
         </select>
         <select value={nozzleFilter} onChange={(e) => setNozzleFilter(e.target.value)}>
-          <option value="">Toutes buses</option>
+          <option value="">All nozzles</option>
           {diameters.map((d) => (
             <option key={d} value={d}>
               {d} mm
@@ -41,7 +41,7 @@ export default function ComboLibrary({ combos, spools, nozzles, onEdit, onDelete
           ))}
         </select>
         <select value={objectiveFilter} onChange={(e) => setObjectiveFilter(e.target.value)}>
-          <option value="">Tous objectifs</option>
+          <option value="">All objectives</option>
           {OBJECTIVES.map((o) => (
             <option key={o.id} value={o.id}>
               {o.label}
@@ -51,7 +51,7 @@ export default function ComboLibrary({ combos, spools, nozzles, onEdit, onDelete
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty">Aucun combo ne correspond. Crée-en un avec le bouton "Nouveau combo".</div>
+        <div className="empty">No combo matches. Create one with the "New combo" button.</div>
       ) : (
         <div className="grid">
           {filtered.map((c) => {
@@ -61,10 +61,10 @@ export default function ComboLibrary({ combos, spools, nozzles, onEdit, onDelete
               <div className="card" key={c.id}>
                 <h3>{c.name}</h3>
                 <div className="meta">
-                  {spool ? `${spool.brand} — ${spool.material} ${spool.color}` : "bobine ?"} · {nozzle ? `${nozzle.diameter_mm} mm` : "buse ?"}
+                  {spool ? `${spool.brand} — ${spool.material} ${spool.color}` : "spool ?"} · {nozzle ? `${nozzle.diameter_mm} mm` : "nozzle ?"}
                 </div>
-                {c.machine_preset_name && <div className="meta">Imprimante : {c.machine_preset_name}</div>}
-                {c.process_preset_name && <div className="meta">Process : {c.process_preset_name}</div>}
+                {c.machine_preset_name && <div className="meta">Printer: {c.machine_preset_name}</div>}
+                {c.process_preset_name && <div className="meta">Process: {c.process_preset_name}</div>}
                 <div className="tags">
                   {c.objectives.map((o) => (
                     <span className="tag" key={o}>
@@ -74,11 +74,11 @@ export default function ComboLibrary({ combos, spools, nozzles, onEdit, onDelete
                 </div>
                 <div className="card-actions">
                   <button className="primary" disabled={applyingId === c.id || !c.machine_preset_name} onClick={() => onApply(c.id)}>
-                    {applyingId === c.id ? "Application…" : "Appliquer à OrcaSlicer"}
+                    {applyingId === c.id ? "Applying…" : "Apply to OrcaSlicer"}
                   </button>
-                  <button onClick={() => onEdit(c)}>Éditer</button>
+                  <button onClick={() => onEdit(c)}>Edit</button>
                   <button className="danger" onClick={() => onDelete(c.id)}>
-                    Suppr.
+                    Delete
                   </button>
                 </div>
               </div>

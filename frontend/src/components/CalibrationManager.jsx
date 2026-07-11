@@ -4,18 +4,18 @@ const EMPTY = { spool_id: "", nozzle_id: "", source_filament_preset: "", notes: 
 
 const FIELD_LABELS = {
   filament_flow_ratio: "Flow ratio",
-  enable_pressure_advance: "Pressure advance activée",
+  enable_pressure_advance: "Pressure advance enabled",
   pressure_advance: "Pressure advance (K)",
-  nozzle_temperature: "Temp. buse",
-  nozzle_temperature_initial_layer: "Temp. buse (1re couche)",
-  hot_plate_temp: "Temp. plateau (lisse)",
-  hot_plate_temp_initial_layer: "Temp. plateau (1re couche, lisse)",
-  cool_plate_temp: "Temp. plateau (froid)",
-  cool_plate_temp_initial_layer: "Temp. plateau (1re couche, froid)",
-  eng_plate_temp: "Temp. plateau (ingénierie)",
-  eng_plate_temp_initial_layer: "Temp. plateau (1re couche, ingénierie)",
-  textured_plate_temp: "Temp. plateau (texturé)",
-  textured_plate_temp_initial_layer: "Temp. plateau (1re couche, texturé)",
+  nozzle_temperature: "Nozzle temp.",
+  nozzle_temperature_initial_layer: "Nozzle temp. (first layer)",
+  hot_plate_temp: "Bed temp. (smooth)",
+  hot_plate_temp_initial_layer: "Bed temp. (first layer, smooth)",
+  cool_plate_temp: "Bed temp. (cool)",
+  cool_plate_temp_initial_layer: "Bed temp. (first layer, cool)",
+  eng_plate_temp: "Bed temp. (engineering)",
+  eng_plate_temp_initial_layer: "Bed temp. (first layer, engineering)",
+  textured_plate_temp: "Bed temp. (textured)",
+  textured_plate_temp_initial_layer: "Bed temp. (first layer, textured)",
 };
 
 function formatValue(value) {
@@ -66,19 +66,19 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
   return (
     <div>
       <div className="panel">
-        <h3>{editingId ? "Modifier la calibration" : "Verrouiller une calibration"}</h3>
+        <h3>{editingId ? "Edit calibration" : "Lock a calibration"}</h3>
         <p className="meta">
-          Choisis une bobine, une buse, et le preset filament OrcaSlicer déjà calibré pour cette paire. L'appli en extrait le
-          flow ratio, la pressure advance et les températures — ces valeurs seront toujours préservées quel que soit
-          l'objectif d'impression choisi pour un combo utilisant cette bobine+buse.
+          Choose a spool, a nozzle, and the OrcaSlicer filament preset already calibrated for that pair. The app extracts
+          the flow ratio, pressure advance, and temperatures — these values will always be preserved regardless of the
+          print objective chosen for a combo using this spool+nozzle.
         </p>
         <form onSubmit={submit}>
           <div className="form-grid">
             <label>
-              Bobine
+              Spool
               <select required value={form.spool_id} onChange={(e) => setForm({ ...form, spool_id: e.target.value })}>
                 <option value="" disabled>
-                  — choisir —
+                  — choose —
                 </option>
                 {spools.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -88,10 +88,10 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
               </select>
             </label>
             <label>
-              Buse
+              Nozzle
               <select required value={form.nozzle_id} onChange={(e) => setForm({ ...form, nozzle_id: e.target.value })}>
                 <option value="" disabled>
-                  — choisir —
+                  — choose —
                 </option>
                 {nozzles.map((n) => (
                   <option key={n.id} value={n.id}>
@@ -103,16 +103,16 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
           </div>
           <div className="form-grid full" style={{ marginTop: 12 }}>
             <label>
-              Preset filament source (déjà calibré)
+              Source filament preset (already calibrated)
               <select
                 required
                 value={form.source_filament_preset}
                 onChange={(e) => setForm({ ...form, source_filament_preset: e.target.value })}
               >
                 <option value="" disabled>
-                  — choisir —
+                  — choose —
                 </option>
-                <optgroup label="Personnalisés">
+                <optgroup label="Custom">
                   {filamentProfiles
                     .filter((p) => p.source === "user")
                     .map((p) => (
@@ -121,7 +121,7 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
                       </option>
                     ))}
                 </optgroup>
-                <optgroup label="Par défaut">
+                <optgroup label="Default">
                   {filamentProfiles
                     .filter((p) => p.source === "system")
                     .map((p) => (
@@ -143,18 +143,18 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
           <div className="modal-actions">
             {editingId && (
               <button type="button" onClick={resetForm}>
-                Annuler
+                Cancel
               </button>
             )}
             <button type="submit" className="primary">
-              {editingId ? "Enregistrer" : "Verrouiller"}
+              {editingId ? "Save" : "Lock"}
             </button>
           </div>
         </form>
       </div>
 
       {profiles.length === 0 ? (
-        <div className="empty">Aucune calibration verrouillée pour l'instant.</div>
+        <div className="empty">No locked calibrations yet.</div>
       ) : (
         <div className="grid">
           {profiles.map((p) => {
@@ -163,9 +163,9 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
             return (
               <div className="card" key={p.id}>
                 <h3>
-                  {spool ? `${spool.brand} ${spool.material}` : "bobine ?"} · {nozzle ? `${nozzle.diameter_mm} mm` : "buse ?"}
+                  {spool ? `${spool.brand} ${spool.material}` : "spool ?"} · {nozzle ? `${nozzle.diameter_mm} mm` : "nozzle ?"}
                 </h3>
-                <div className="meta">Source : {p.source_filament_preset}</div>
+                <div className="meta">Source: {p.source_filament_preset}</div>
                 <div className="diff-panel" style={{ marginTop: 8 }}>
                   {Object.entries(p.locked_fields).map(([key, value]) => (
                     <div className="diff-row overridden" key={key}>
@@ -175,9 +175,9 @@ export default function CalibrationManager({ profiles, spools, nozzles, filament
                   ))}
                 </div>
                 <div className="card-actions">
-                  <button onClick={() => startEdit(p)}>Éditer</button>
+                  <button onClick={() => startEdit(p)}>Edit</button>
                   <button className="danger" onClick={() => onDelete(p.id)}>
-                    Suppr.
+                    Delete
                   </button>
                 </div>
               </div>

@@ -1,45 +1,45 @@
-# Orca Profile Manager — notes pour Claude Code
+# Orca Profile Manager — notes for Claude Code
 
-Companion app macOS pour OrcaSlicer : organise les bobines/buses/presets par
-objectif d'impression, verrouille les réglages de calibration filament, et
-applique des combos directement dans les fichiers d'OrcaSlicer.
+macOS companion app for OrcaSlicer: organizes spools/nozzles/presets by print
+objective, locks filament calibration settings, and applies combos directly
+to OrcaSlicer's own files.
 
-## Démarrage rapide
+## Quick start
 
 ```bash
-./scripts/setup.sh            # venv + deps + icône d'app macOS, une seule fois
+./scripts/setup.sh            # venv + deps + macOS app icon, one time
 open "$HOME/Applications/Orca Profile Manager.app"
 ```
 
-Ou en dev manuel (deux terminaux) :
+Or manual dev (two terminals):
 
 ```bash
 cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000
 cd frontend && npm run dev    # http://localhost:5173
 ```
 
-Aucune suite de tests automatisée n'existe : la vérification se fait en
-lançant réellement les deux serveurs et en pilotant l'UI (Playwright headless
-ou navigateur) contre une vraie installation OrcaSlicer locale.
+No automated test suite exists: verification means actually launching both
+servers and driving the UI (headless Playwright or a real browser) against a
+real local OrcaSlicer installation.
 
 ## Architecture
 
-- `backend/app/orca_paths.py` — localise `~/Library/Application Support/OrcaSlicer`, lit `OrcaSlicer.conf` (JSON malgré l'extension).
-- `backend/app/preset_reader.py` — indexe et résout les presets OrcaSlicer (`system/<Vendeur>/{filament,machine,process}/*.json` + `user/<id>/...`). Chaque preset ne stocke que ses champs *surchargés* par rapport à son parent, référencé via `"inherits"` (même `kind` uniquement) — `resolve()` fait le merge récursif. Les valeurs scalaires sont presque toutes des strings, souvent encapsulées dans un array à un élément (`["215"]`) pour les champs par-extrudeur.
-- `backend/app/preset_writer.py` — écrit dans `user/<id>/` uniquement (jamais `system/`), toujours précédé d'une sauvegarde horodatée dans `data/backups/`.
-- `backend/app/calibration.py` — liste blanche `CALIBRATION_FIELDS` (flow ratio, pressure advance, températures) : ce sont des champs du preset **filament**, pas process. Décision utilisateur du 2026-07-11 : verrouiller ces champs par paire (bobine, buse), extraits d'un preset filament déjà calibré.
-- `backend/app/models.py` — SQLite (SQLAlchemy) : `Spool`, `Nozzle`, `Combo`, `CalibrationProfile`, `Adjustment`. Ces tables sont la seule couche d'organisation ; les presets OrcaSlicer eux-mêmes ne sont jamais dupliqués en base, seulement référencés par nom.
-- `frontend/src/` — React + Vite, pas de framework UI externe (CSS custom dans `index.css`). `ComboEditor.jsx` demande le preset imprimante *avant* le preset process pour filtrer la liste (souvent 400+ presets process sinon) via `GET /profiles/process?compatible_with=<machine>`.
+- `backend/app/orca_paths.py` — locates `~/Library/Application Support/OrcaSlicer`, reads `OrcaSlicer.conf` (JSON despite the extension).
+- `backend/app/preset_reader.py` — indexes and resolves OrcaSlicer presets (`system/<Vendor>/{filament,machine,process}/*.json` + `user/<id>/...`). Each preset only stores the fields it *overrides* relative to its parent, referenced via `"inherits"` (same `kind` only) — `resolve()` does the recursive merge. Scalar values are almost all strings, often wrapped in a one-element array (`["215"]`) for per-extruder fields.
+- `backend/app/preset_writer.py` — writes only under `user/<id>/` (never `system/`), always preceded by a timestamped backup in `data/backups/`.
+- `backend/app/calibration.py` — `CALIBRATION_FIELDS` allowlist (flow ratio, pressure advance, temperatures): these are **filament** preset fields, not process. User decision (2026-07-11): lock these fields per (spool, nozzle) pair, extracted from an already-calibrated filament preset.
+- `backend/app/models.py` — SQLite (SQLAlchemy): `Spool`, `Nozzle`, `Combo`, `CalibrationProfile`, `Adjustment`. These tables are the only organizational layer; OrcaSlicer's own presets are never duplicated in the DB, only referenced by name.
+- `frontend/src/` — React + Vite, no external UI framework (custom CSS in `index.css`). `ComboEditor.jsx` asks for the printer preset *before* the process preset to filter the list (often 400+ process presets otherwise) via `GET /profiles/process?compatible_with=<machine>`.
 
-## Pièges déjà rencontrés
+## Known gotchas
 
-- **Vite écoute en IPv6 (`::1`) uniquement** sur certaines machines — un `curl http://127.0.0.1:5173` échoue alors que `curl http://localhost:5173` fonctionne. Toujours utiliser `localhost` dans les scripts/health-checks, jamais `127.0.0.1`.
-- **OrcaSlicer doit être fermé avant "Appliquer à OrcaSlicer"** : l'appli écrit `presets.machine` dans `OrcaSlicer.conf` sur disque, mais une instance OrcaSlicer déjà ouverte garde sa config en mémoire et l'écrase au moment de se fermer. Le backend expose `orca_running` (via `pgrep -x OrcaSlicer`) dans `/status` et dans la réponse de `/combos/{id}/apply` ; le frontend affiche un avertissement en conséquence — ne pas supprimer cette logique.
-- **Ne jamais faire `rm -f data/app.db`** pour "repartir propre" pendant des tests — ce fichier contient les vraies données de l'utilisateur (bobines, buses, combos, calibrations), pas seulement des artefacts de test. Utiliser une base séparée ou supprimer des enregistrements ciblés par id.
-- **Le bundle macOS (`~/Applications/Orca Profile Manager.app`) vit hors du repo** — il est régénéré par `scripts/install-macos-app.sh`, jamais committé (chemins absolus propres à chaque machine).
+- **Vite listens on IPv6 (`::1`) only** on some machines — `curl http://127.0.0.1:5173` fails while `curl http://localhost:5173` works. Always use `localhost` in scripts/health checks, never `127.0.0.1`.
+- **OrcaSlicer must be closed before "Apply to OrcaSlicer"**: the app writes `presets.machine` to `OrcaSlicer.conf` on disk, but a running OrcaSlicer instance keeps its config in memory and overwrites it on exit. The backend exposes `orca_running` (via `pgrep -x OrcaSlicer`) in `/status` and in the `/combos/{id}/apply` response; the frontend shows a warning accordingly — don't remove this logic.
+- **Never `rm -f data/app.db`** to "start clean" during testing — this file holds real user data (spools, nozzles, combos, calibrations), not just test artifacts. Use a separate database or delete specific rows by id instead.
+- **The macOS bundle (`~/Applications/Orca Profile Manager.app`) lives outside the repo** — it's regenerated by `scripts/install-macos-app.sh`, never committed (absolute paths are machine-specific).
 
-## Sécurité / portée des écritures
+## Security / write scope
 
-Le backend ne modifie jamais `system/` (presets fournis par OrcaSlicer). Toute
-écriture dans `user/` est précédée d'une sauvegarde dans `data/backups/`
-(non versionné, propre à chaque machine — voir `.gitignore`).
+The backend never modifies `system/` (presets shipped by OrcaSlicer). Every
+write under `user/` is preceded by a backup in `data/backups/` (not
+version-controlled, machine-specific — see `.gitignore`).

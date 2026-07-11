@@ -15,18 +15,18 @@ const EMPTY = {
 
 const CALIBRATION_FIELD_LABELS = {
   filament_flow_ratio: "Flow ratio",
-  enable_pressure_advance: "Pressure advance activée",
+  enable_pressure_advance: "Pressure advance enabled",
   pressure_advance: "Pressure advance (K)",
-  nozzle_temperature: "Temp. buse",
-  nozzle_temperature_initial_layer: "Temp. buse (1re couche)",
-  hot_plate_temp: "Temp. plateau (lisse)",
-  hot_plate_temp_initial_layer: "Temp. plateau (1re couche, lisse)",
-  cool_plate_temp: "Temp. plateau (froid)",
-  cool_plate_temp_initial_layer: "Temp. plateau (1re couche, froid)",
-  eng_plate_temp: "Temp. plateau (ingénierie)",
-  eng_plate_temp_initial_layer: "Temp. plateau (1re couche, ingénierie)",
-  textured_plate_temp: "Temp. plateau (texturé)",
-  textured_plate_temp_initial_layer: "Temp. plateau (1re couche, texturé)",
+  nozzle_temperature: "Nozzle temp.",
+  nozzle_temperature_initial_layer: "Nozzle temp. (first layer)",
+  hot_plate_temp: "Bed temp. (smooth)",
+  hot_plate_temp_initial_layer: "Bed temp. (first layer, smooth)",
+  cool_plate_temp: "Bed temp. (cool)",
+  cool_plate_temp_initial_layer: "Bed temp. (first layer, cool)",
+  eng_plate_temp: "Bed temp. (engineering)",
+  eng_plate_temp_initial_layer: "Bed temp. (first layer, engineering)",
+  textured_plate_temp: "Bed temp. (textured)",
+  textured_plate_temp_initial_layer: "Bed temp. (first layer, textured)",
 };
 
 function formatValue(value) {
@@ -101,21 +101,21 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{combo ? "Modifier le combo" : "Nouveau combo"}</h3>
+        <h3>{combo ? "Edit combo" : "New combo"}</h3>
         <form onSubmit={submit}>
           <div className="form-grid full">
             <label>
-              Nom du combo
-              <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="ex: PETG solide - buse 0.4" />
+              Combo name
+              <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Strong PETG - 0.4 nozzle" />
             </label>
           </div>
 
           <div className="form-grid full" style={{ marginTop: 12 }}>
             <label>
-              Preset imprimante OrcaSlicer
+              OrcaSlicer printer preset
               <select required value={form.machine_preset_name} onChange={(e) => handleMachineChange(e.target.value)}>
                 <option value="" disabled>
-                  — choisir en premier, pour filtrer la liste des process —
+                  — choose first, to filter the process list —
                 </option>
                 {machineProfiles.map((p) => (
                   <option key={p.name} value={p.name}>
@@ -128,10 +128,10 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
 
           <div className="form-grid" style={{ marginTop: 12 }}>
             <label>
-              Bobine
+              Spool
               <select required value={form.spool_id} onChange={(e) => setForm({ ...form, spool_id: e.target.value })}>
                 <option value="" disabled>
-                  — choisir —
+                  — choose —
                 </option>
                 {spools.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -141,10 +141,10 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
               </select>
             </label>
             <label>
-              Buse
+              Nozzle
               <select required value={form.nozzle_id} onChange={(e) => setForm({ ...form, nozzle_id: e.target.value })}>
                 <option value="" disabled>
-                  — choisir —
+                  — choose —
                 </option>
                 {nozzles.map((n) => (
                   <option key={n.id} value={n.id}>
@@ -159,7 +159,7 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
             <div style={{ marginTop: 12 }}>
               {calibrationProfile ? (
                 <>
-                  <label>🔒 Calibration verrouillée pour cette bobine+buse (source : {calibrationProfile.source_filament_preset})</label>
+                  <label>🔒 Locked calibration for this spool+nozzle (source: {calibrationProfile.source_filament_preset})</label>
                   <div className="diff-panel">
                     {Object.entries(calibrationProfile.locked_fields).map(([key, value]) => (
                       <div className="diff-row overridden" key={key}>
@@ -171,8 +171,8 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
                 </>
               ) : (
                 <div className="status-line">
-                  Aucune calibration verrouillée pour cette bobine+buse — vas dans l'onglet "Calibration" pour en créer une si tu
-                  veux figer flow ratio / pressure advance / températures.
+                  No locked calibration for this spool+nozzle — go to the "Calibration" tab to create one if you want to
+                  pin flow ratio / pressure advance / temperatures.
                 </div>
               )}
             </div>
@@ -180,16 +180,16 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
 
           <div className="form-grid full" style={{ marginTop: 12 }}>
             <label>
-              Preset process OrcaSlicer {form.machine_preset_name && `(compatibles avec l'imprimante choisie : ${processOptions.length})`}
+              OrcaSlicer process preset {form.machine_preset_name && `(compatible with the chosen printer: ${processOptions.length})`}
             </label>
             <select
               disabled={!form.machine_preset_name}
               value={form.process_preset_name}
               onChange={(e) => setForm({ ...form, process_preset_name: e.target.value })}
             >
-              <option value="">— aucun —</option>
+              <option value="">— none —</option>
               {processCustoms.length > 0 && (
-                <optgroup label="Personnalisés">
+                <optgroup label="Custom">
                   {processCustoms.map((p) => (
                     <option key={p.name} value={p.name}>
                       {p.name}
@@ -198,7 +198,7 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
                 </optgroup>
               )}
               {processDefaults.length > 0 && (
-                <optgroup label="Par défaut">
+                <optgroup label="Default">
                   {processDefaults.map((p) => (
                     <option key={p.name} value={p.name}>
                       {p.name}
@@ -211,13 +211,13 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
 
           {form.process_preset_name && (
             <div style={{ marginTop: 12 }}>
-              <label>Réglages résolus du process (vert = surchargé, gris = hérité)</label>
+              <label>Resolved process settings (green = overridden, grey = inherited)</label>
               <PresetDiffPanel kind="process" name={form.process_preset_name} />
             </div>
           )}
 
           <div style={{ marginTop: 12 }}>
-            <label>Objectif(s) d'impression</label>
+            <label>Print objective(s)</label>
             <div className="tags">
               {OBJECTIVES.map((o) => (
                 <button
@@ -241,10 +241,10 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
 
           <div className="modal-actions">
             <button type="button" onClick={onClose}>
-              Annuler
+              Cancel
             </button>
             <button type="submit" className="primary">
-              Enregistrer
+              Save
             </button>
           </div>
         </form>

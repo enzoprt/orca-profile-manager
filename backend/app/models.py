@@ -111,7 +111,7 @@ class Adjustment(Base):
     old_value: Mapped[str] = mapped_column(Text, default="")
     new_value: Mapped[str] = mapped_column(Text, default="")
     reason: Mapped[str] = mapped_column(Text, default="")
-    source: Mapped[str] = mapped_column(Text, default="manuel")  # "manuel" | "suggestion-ia-chat"
+    source: Mapped[str] = mapped_column(Text, default="manual")  # "manual" | "ai-chat-suggestion"
     created_at: Mapped[datetime.datetime] = mapped_column(default=_now)
 
     combo: Mapped["Combo"] = relationship(back_populates="adjustments")

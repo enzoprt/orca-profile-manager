@@ -1,42 +1,33 @@
 # Orca Profile Manager
 
-Gestionnaire de réglages OrcaSlicer : organise tes bobines, buses et presets
-par **objectif d'impression** (précision, solidité, efficacité, support...),
-et applique tes combinaisons directement dans OrcaSlicer.
+OrcaSlicer companion app: organize your spools, nozzles, and presets by
+**print objective** (precision, strength, efficiency, support...), and apply
+your combos directly in OrcaSlicer.
 
-OrcaSlicer ne connaît que des presets JSON — pas de notion d'"objectif". Cette
-appli ajoute cette couche d'organisation par-dessus, sans jamais dupliquer ni
-casser tes vrais presets Orca : elle lit et écrit directement dans
-`~/Library/Application Support/OrcaSlicer/`, avec sauvegarde automatique
-avant chaque écriture (`data/backups/`).
+OrcaSlicer only knows JSON presets — no concept of "objective". This app adds
+that organizational layer on top, without ever duplicating or breaking your
+real Orca presets: it reads and writes directly to
+`~/Library/Application Support/OrcaSlicer/`, with an automatic backup before
+every write (`data/backups/`).
 
-## Structure
+## One-command install
 
-- `backend/` — API FastAPI (Python). Lit/résout/écrit les presets OrcaSlicer,
-  gère la base SQLite (bobines, buses, combos, journal d'ajustements).
-- `frontend/` — interface React (Vite).
-- `data/` — base SQLite (`app.db`) et sauvegardes de sécurité (`backups/`),
-  non versionnées.
-
-## Installation en une commande
-
-Nécessite macOS (le projet lit `~/Library/Application Support/OrcaSlicer`)
-avec [OrcaSlicer](https://github.com/SoftFever/OrcaSlicer) déjà installé, et
-Python 3.11+.
+Requires macOS (the project reads `~/Library/Application Support/OrcaSlicer`)
+with [OrcaSlicer](https://github.com/SoftFever/OrcaSlicer) already installed,
+and Python 3.11+.
 
 ```bash
 ./scripts/setup.sh
 ```
 
-Ça installe le backend (venv Python), le frontend (`npm install`), et crée
-une icône d'app dans `~/Applications/Orca Profile Manager.app`. Double-clique
-dessus pour lancer les deux serveurs et ouvrir l'appli — elle lira
-automatiquement tes propres presets OrcaSlicer, aucune configuration
-supplémentaire nécessaire.
+This installs the backend (Python venv), the frontend (`npm install`), and
+creates an app icon at `~/Applications/Orca Profile Manager.app`. Double-click
+it to launch both servers and open the app — it automatically reads your own
+OrcaSlicer presets, no extra configuration needed.
 
-## Démarrage manuel (dev)
+## Manual dev startup
 
-**Backend** :
+**Backend**:
 
 ```bash
 cd backend
@@ -45,7 +36,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-**Frontend** :
+**Frontend**:
 
 ```bash
 cd frontend
@@ -53,35 +44,42 @@ npm install
 npm run dev
 ```
 
-Ouvrir http://localhost:5173 (le backend doit tourner sur le port 8000).
+Open http://localhost:5173 (the backend must be running on port 8000).
 
-## Fonctionnement
+## Structure
 
-1. **Bobines** et **Buses** : renseigne ce que tu as, en les liant à un preset
-   filament / une imprimante OrcaSlicer existant si tu veux.
-2. **Calibration** : verrouille, par paire bobine+buse, les réglages de
-   calibration (flow ratio, pressure advance, températures buse/plateau) en
-   pointant vers un de tes presets filament déjà calibrés. Ces valeurs sont
-   ensuite toujours affichées (et jamais perdues) quel que soit l'objectif
-   choisi pour un combo utilisant cette bobine+buse.
-3. **Bibliothèque** : crée des "combos" = imprimante + bobine + buse + preset
-   process + objectif(s) d'impression. L'éditeur demande l'imprimante en
-   premier pour réduire la liste des presets process compatibles (souvent
-   400+ sinon), les regroupe en "Personnalisés"/"Par défaut", affiche la
-   calibration verrouillée dès que bobine+buse sont choisies, et montre les
-   réglages résolus du process en distinguant ce qui est surchargé (vert) de
-   ce qui est hérité (gris).
-4. **Appliquer à OrcaSlicer** : active le preset imprimante du combo comme
-   preset actif dans OrcaSlicer (`OrcaSlicer.conf`).
-5. **Journal** : historique des ajustements faits sur un combo (manuel ou
-   suite à une suggestion de Claude en chat), pour garder la raison de chaque
-   changement.
+- `backend/` — FastAPI (Python) API. Reads/resolves/writes OrcaSlicer
+  presets, manages the SQLite database (spools, nozzles, combos, adjustment
+  journal).
+- `frontend/` — React (Vite) UI.
+- `data/` — SQLite database (`app.db`) and safety backups (`backups/`), not
+  version-controlled.
 
-## Sécurité
+## How it works
 
-- Seul `user/<dossier>/` est modifié — jamais `system/` (presets fournis par
-  OrcaSlicer).
-- Chaque fichier écrasé est d'abord copié dans `data/backups/<dossier>/`
-  avec un horodatage.
-- Ferme OrcaSlicer avant d'appliquer un combo pour éviter qu'il n'écrase tes
-  changements au prochain enregistrement depuis son UI.
+1. **Spools** and **Nozzles**: enter what you have, optionally linking each
+   to an existing OrcaSlicer filament preset / printer.
+2. **Calibration**: lock, per spool+nozzle pair, the calibration settings
+   (flow ratio, pressure advance, nozzle/bed temperatures) by pointing to one
+   of your already-calibrated filament presets. These values are then always
+   shown (and never lost) regardless of the objective chosen for a combo
+   using that spool+nozzle.
+3. **Library**: create "combos" = printer + spool + nozzle + process preset +
+   print objective(s). The editor asks for the printer first to shrink the
+   list of compatible process presets (often 400+ otherwise), groups them
+   into "Custom"/"Default", shows the locked calibration as soon as
+   spool+nozzle are picked, and displays the resolved process settings,
+   distinguishing overridden (green) from inherited (grey).
+4. **Apply to OrcaSlicer**: activates the combo's printer preset as the
+   active preset in OrcaSlicer (`OrcaSlicer.conf`).
+5. **Journal**: history of adjustments made to a combo (manual or following
+   an AI-chat suggestion), to keep track of why each change was made.
+
+## Safety
+
+- Only `user/<folder>/` is ever modified — never `system/` (presets shipped
+  by OrcaSlicer).
+- Every file about to be overwritten is first copied into
+  `data/backups/<folder>/` with a timestamp.
+- Quit OrcaSlicer before applying a combo, or it may overwrite your change
+  the next time it saves its own state from its UI.

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const EMPTY = { diameter_mm: 0.4, material: "laiton", printer_name: "", notes: "" };
+const EMPTY = { diameter_mm: 0.4, material: "brass", printer_name: "", notes: "" };
 
 export default function NozzleManager({ nozzles, machineProfiles, onCreate, onUpdate, onDelete }) {
   const [form, setForm] = useState(EMPTY);
@@ -32,19 +32,19 @@ export default function NozzleManager({ nozzles, machineProfiles, onCreate, onUp
   return (
     <div>
       <div className="panel">
-        <h3>{editingId ? "Modifier la buse" : "Nouvelle buse"}</h3>
+        <h3>{editingId ? "Edit nozzle" : "New nozzle"}</h3>
         <form onSubmit={submit}>
           <div className="form-grid">
             <label>
-              Diamètre (mm)
+              Diameter (mm)
               <input type="number" step="0.01" required value={form.diameter_mm} onChange={(e) => setForm({ ...form, diameter_mm: e.target.value })} />
             </label>
             <label>
-              Matière
-              <input value={form.material} onChange={(e) => setForm({ ...form, material: e.target.value })} placeholder="laiton, acier trempé..." />
+              Material
+              <input value={form.material} onChange={(e) => setForm({ ...form, material: e.target.value })} placeholder="brass, hardened steel..." />
             </label>
             <label>
-              Imprimante / preset machine associé
+              Printer / associated machine preset
               <input list="printer-names" value={form.printer_name} onChange={(e) => setForm({ ...form, printer_name: e.target.value })} />
               <datalist id="printer-names">
                 {printerNames.map((n) => (
@@ -62,25 +62,25 @@ export default function NozzleManager({ nozzles, machineProfiles, onCreate, onUp
           <div className="modal-actions">
             {editingId && (
               <button type="button" onClick={resetForm}>
-                Annuler
+                Cancel
               </button>
             )}
             <button type="submit" className="primary">
-              {editingId ? "Enregistrer" : "Ajouter"}
+              {editingId ? "Save" : "Add"}
             </button>
           </div>
         </form>
       </div>
 
       {nozzles.length === 0 ? (
-        <div className="empty">Aucune buse enregistrée.</div>
+        <div className="empty">No nozzles registered yet.</div>
       ) : (
         <table>
           <thead>
             <tr>
-              <th>Diamètre</th>
-              <th>Matière</th>
-              <th>Imprimante</th>
+              <th>Diameter</th>
+              <th>Material</th>
+              <th>Printer</th>
               <th></th>
             </tr>
           </thead>
@@ -92,9 +92,9 @@ export default function NozzleManager({ nozzles, machineProfiles, onCreate, onUp
                 <td>{n.printer_name || "—"}</td>
                 <td>
                   <div className="card-actions">
-                    <button onClick={() => startEdit(n)}>Éditer</button>
+                    <button onClick={() => startEdit(n)}>Edit</button>
                     <button className="danger" onClick={() => onDelete(n.id)}>
-                      Suppr.
+                      Delete
                     </button>
                   </div>
                 </td>

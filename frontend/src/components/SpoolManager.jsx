@@ -30,33 +30,33 @@ export default function SpoolManager({ spools, filamentProfiles, onCreate, onUpd
   return (
     <div>
       <div className="panel">
-        <h3>{editingId ? "Modifier la bobine" : "Nouvelle bobine"}</h3>
+        <h3>{editingId ? "Edit spool" : "New spool"}</h3>
         <form onSubmit={submit}>
           <div className="form-grid">
             <label>
-              Marque
+              Brand
               <input required value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
             </label>
             <label>
-              Matière
+              Material
               <input required value={form.material} onChange={(e) => setForm({ ...form, material: e.target.value })} placeholder="PLA, PETG, ABS..." />
             </label>
             <label>
-              Couleur
+              Color
               <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
             </label>
             <label>
-              Diamètre (mm)
+              Diameter (mm)
               <input type="number" step="0.01" value={form.diameter_mm} onChange={(e) => setForm({ ...form, diameter_mm: e.target.value })} />
             </label>
             <label>
-              Coût (€)
+              Cost (€)
               <input type="number" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} />
             </label>
             <label>
-              Preset filament OrcaSlicer lié
+              Linked OrcaSlicer filament preset
               <select value={form.filament_preset_name || ""} onChange={(e) => setForm({ ...form, filament_preset_name: e.target.value })}>
-                <option value="">— aucun —</option>
+                <option value="">— none —</option>
                 {filamentProfiles.map((p) => (
                   <option key={p.name} value={p.name}>
                     {p.name}
@@ -74,27 +74,27 @@ export default function SpoolManager({ spools, filamentProfiles, onCreate, onUpd
           <div className="modal-actions">
             {editingId && (
               <button type="button" onClick={resetForm}>
-                Annuler
+                Cancel
               </button>
             )}
             <button type="submit" className="primary">
-              {editingId ? "Enregistrer" : "Ajouter"}
+              {editingId ? "Save" : "Add"}
             </button>
           </div>
         </form>
       </div>
 
       {spools.length === 0 ? (
-        <div className="empty">Aucune bobine enregistrée.</div>
+        <div className="empty">No spools registered yet.</div>
       ) : (
         <table>
           <thead>
             <tr>
-              <th>Marque</th>
-              <th>Matière</th>
-              <th>Couleur</th>
+              <th>Brand</th>
+              <th>Material</th>
+              <th>Color</th>
               <th>Ø</th>
-              <th>Preset filament</th>
+              <th>Filament preset</th>
               <th></th>
             </tr>
           </thead>
@@ -108,9 +108,9 @@ export default function SpoolManager({ spools, filamentProfiles, onCreate, onUpd
                 <td>{s.filament_preset_name || "—"}</td>
                 <td>
                   <div className="card-actions">
-                    <button onClick={() => startEdit(s)}>Éditer</button>
+                    <button onClick={() => startEdit(s)}>Edit</button>
                     <button className="danger" onClick={() => onDelete(s.id)}>
-                      Suppr.
+                      Delete
                     </button>
                   </div>
                 </td>

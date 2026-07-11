@@ -8,15 +8,15 @@ import CalibrationManager from "./components/CalibrationManager";
 import Journal from "./components/Journal";
 
 const TABS = [
-  { id: "bibliotheque", label: "Bibliothèque" },
-  { id: "bobines", label: "Bobines" },
-  { id: "buses", label: "Buses" },
+  { id: "library", label: "Library" },
+  { id: "spools", label: "Spools" },
+  { id: "nozzles", label: "Nozzles" },
   { id: "calibration", label: "Calibration" },
   { id: "journal", label: "Journal" },
 ];
 
 function App() {
-  const [tab, setTab] = useState("bibliotheque");
+  const [tab, setTab] = useState("library");
   const [status, setStatus] = useState(null);
   const [statusError, setStatusError] = useState(null);
 
@@ -62,7 +62,7 @@ function App() {
   }
 
   async function handleDeleteCombo(id) {
-    if (!confirm("Supprimer ce combo ?")) return;
+    if (!confirm("Delete this combo?")) return;
     await api.deleteCombo(id);
     refreshAll();
   }
@@ -74,15 +74,15 @@ function App() {
       const res = await api.applyCombo(id);
       if (res.orca_running) {
         setApplyMessage(
-          `⚠️ Preset "${res.activated}" écrit sur le disque, mais OrcaSlicer est actuellement ouvert et ne le verra pas. ` +
-            `Ferme complètement OrcaSlicer puis rouvre-le pour que le changement prenne effet (sinon il sera écrasé à la fermeture).`
+          `⚠️ Preset "${res.activated}" written to disk, but OrcaSlicer is currently open and won't see it. ` +
+            `Fully quit OrcaSlicer and reopen it for the change to take effect (otherwise it will be overwritten on exit).`
         );
       } else {
-        setApplyMessage(`✅ Preset imprimante "${res.activated}" activé — il sera actif au prochain lancement d'OrcaSlicer.`);
+        setApplyMessage(`✅ Printer preset "${res.activated}" activated — it will be active next time OrcaSlicer launches.`);
       }
       api.status().then(setStatus).catch(() => {});
     } catch (e) {
-      setApplyMessage(`Échec : ${e.message}`);
+      setApplyMessage(`Failed: ${e.message}`);
     } finally {
       setApplyingId(null);
     }
@@ -92,7 +92,7 @@ function App() {
     <div>
       <div className="app-header">
         <h1>Orca Profile Manager</h1>
-        {tab === "bibliotheque" && (
+        {tab === "library" && (
           <button
             className="primary"
             onClick={() => {
@@ -100,26 +100,26 @@ function App() {
               setShowEditor(true);
             }}
           >
-            + Nouveau combo
+            + New combo
           </button>
         )}
       </div>
 
       {statusError ? (
-        <div className="status-line error">OrcaSlicer introuvable : {statusError}</div>
+        <div className="status-line error">OrcaSlicer not found: {statusError}</div>
       ) : status ? (
         <div className="status-line">
-          {status.orca_data_dir} · {status.vendors.length} vendeurs · dossier actif {status.active_user_folder.slice(0, 8)}
-          {status.orca_cli_available ? " · CLI disponible" : " · CLI introuvable"}
+          {status.orca_data_dir} · {status.vendors.length} vendors · active folder {status.active_user_folder.slice(0, 8)}
+          {status.orca_cli_available ? " · CLI available" : " · CLI not found"}
         </div>
       ) : (
-        <div className="status-line">Connexion à OrcaSlicer…</div>
+        <div className="status-line">Connecting to OrcaSlicer…</div>
       )}
 
       {status?.orca_running && (
         <div className="status-line error">
-          ⚠️ OrcaSlicer est ouvert. Un "Appliquer à OrcaSlicer" sera écrit sur le disque mais invisible tant qu'OrcaSlicer
-          tourne, et risque d'être écrasé à sa fermeture — ferme-le d'abord si tu veux appliquer un combo maintenant.
+          ⚠️ OrcaSlicer is open. Clicking "Apply to OrcaSlicer" will write to disk but stay invisible while OrcaSlicer is
+          running, and may be overwritten when it closes — quit it first if you want to apply a combo now.
         </div>
       )}
 
@@ -133,7 +133,7 @@ function App() {
         ))}
       </div>
 
-      {tab === "bibliotheque" && (
+      {tab === "library" && (
         <ComboLibrary
           combos={combos}
           spools={spools}
@@ -148,7 +148,7 @@ function App() {
         />
       )}
 
-      {tab === "bobines" && (
+      {tab === "spools" && (
         <SpoolManager
           spools={spools}
           filamentProfiles={filamentProfiles}
@@ -161,14 +161,14 @@ function App() {
             refreshAll();
           }}
           onDelete={async (id) => {
-            if (!confirm("Supprimer cette bobine ?")) return;
+            if (!confirm("Delete this spool?")) return;
             await api.deleteSpool(id);
             refreshAll();
           }}
         />
       )}
 
-      {tab === "buses" && (
+      {tab === "nozzles" && (
         <NozzleManager
           nozzles={nozzles}
           machineProfiles={machineProfiles}
@@ -181,7 +181,7 @@ function App() {
             refreshAll();
           }}
           onDelete={async (id) => {
-            if (!confirm("Supprimer cette buse ?")) return;
+            if (!confirm("Delete this nozzle?")) return;
             await api.deleteNozzle(id);
             refreshAll();
           }}
@@ -203,7 +203,7 @@ function App() {
             refreshAll();
           }}
           onDelete={async (id) => {
-            if (!confirm("Supprimer cette calibration verrouillée ?")) return;
+            if (!confirm("Delete this locked calibration?")) return;
             await api.deleteCalibrationProfile(id);
             refreshAll();
           }}

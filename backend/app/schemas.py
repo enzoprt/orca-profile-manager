@@ -81,7 +81,7 @@ class AdjustmentIn(BaseModel):
     old_value: str = ""
     new_value: str = ""
     reason: str = ""
-    source: str = "manuel"
+    source: str = "manual"
 
 
 class AdjustmentOut(AdjustmentIn):
