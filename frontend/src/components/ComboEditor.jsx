@@ -97,6 +97,24 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
 
   const processDefaults = processOptions.filter((p) => p.source === "system");
   const processCustoms = processOptions.filter((p) => p.source === "user");
+  const selectedProcess = processOptions.find((p) => p.name === form.process_preset_name);
+  const processEditable = selectedProcess?.source === "user";
+
+  async function handleFieldChange(field, oldValue, newValue) {
+    if (!combo) return;
+    try {
+      await api.createAdjustment({
+        combo_id: combo.id,
+        field,
+        old_value: oldValue,
+        new_value: newValue,
+        reason: "Manual edit from combo editor",
+        source: "manual",
+      });
+    } catch {
+      // journal logging is best-effort; the preset edit itself already succeeded
+    }
+  }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -211,8 +229,18 @@ export default function ComboEditor({ combo, spools, nozzles, machineProfiles, o
 
           {form.process_preset_name && (
             <div style={{ marginTop: 12 }}>
-              <label>Resolved process settings (green = overridden, grey = inherited)</label>
-              <PresetDiffPanel kind="process" name={form.process_preset_name} />
+              <label>
+                Resolved process settings (green = overridden, grey = inherited)
+                {processEditable
+                  ? " — click a value to edit, ↺ to reset to inherited"
+                  : " — read-only (Orca default preset, pick/create a custom one to edit)"}
+              </label>
+              <PresetDiffPanel
+                kind="process"
+                name={form.process_preset_name}
+                editable={processEditable}
+                onFieldChange={handleFieldChange}
+              />
             </div>
           )}
 

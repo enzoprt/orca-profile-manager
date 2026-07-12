@@ -16,6 +16,7 @@ from .schemas import (
     ComboOut,
     NozzleIn,
     NozzleOut,
+    ProfileOverrideIn,
     SpoolIn,
     SpoolOut,
 )
@@ -83,6 +84,38 @@ def raw_profile(kind: Literal["filament", "machine", "process"], name: str):
         return preset_reader.raw_preset(name, kind)
     except KeyError as exc:
         raise HTTPException(404, str(exc)) from exc
+
+
+# ---- Editing OrcaSlicer user presets in place (never touches system/) ----
+
+# Keys write_preset() manages itself — never pass these through as overrides.
+_PROFILE_META_KEYS = {"name", "from", "version", "print_settings_id", "printer_settings_id", "filament_settings_id"}
+
+
+@app.put("/profiles/{kind}/{name}/override")
+def set_profile_override(kind: Literal["filament", "machine", "process"], name: str, payload: ProfileOverrideIn):
+    index = preset_reader.build_index(kind)
+    entry = index.get(name)
+    if entry is None:
+        raise HTTPException(404, f"Preset '{name}' not found")
+    if entry.source != "user":
+        raise HTTPException(400, "System presets can't be edited directly — duplicate it into a custom preset first.")
+
+    raw = preset_reader.raw_preset(name, kind, index=index)
+    inherits = raw.get("inherits")
+    fields = {k: v for k, v in raw.items() if k not in _PROFILE_META_KEYS and k != "inherits"}
+
+    if payload.value is None:
+        fields.pop(payload.field, None)
+    else:
+        fields[payload.field] = payload.value
+
+    preset_writer.write_preset(kind, name, fields, inherits=inherits)
+
+    return {
+        "raw": preset_reader.raw_preset(name, kind),
+        "resolved": preset_reader.resolve(name, kind),
+    }
 
 
 # ---- Spools ----

@@ -75,6 +75,11 @@ class CalibrationProfileOut(BaseModel):
     updated_at: datetime.datetime
 
 
+class ProfileOverrideIn(BaseModel):
+    field: str
+    value: str | list[str] | None = None
+
+
 class AdjustmentIn(BaseModel):
     combo_id: int
     field: str

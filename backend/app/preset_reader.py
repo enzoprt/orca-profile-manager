@@ -49,7 +49,18 @@ def build_index(kind: PresetKind) -> dict[str, PresetEntry]:
             name = data.get("name", json_path.stem)
             index[name] = PresetEntry(name, kind, json_path, "system", vendor)
 
-    for folder in orca_paths.list_user_folders():
+    folders = orca_paths.list_user_folders()
+    try:
+        active_folder = orca_paths.active_user_folder_id()
+    except (FileNotFoundError, KeyError):
+        active_folder = None
+    if active_folder in folders:
+        # Process the active folder last so it wins on name collisions with
+        # other (stale/inactive) user folders — matching what OrcaSlicer
+        # itself actually has loaded, rather than alphabetical order.
+        folders = [f for f in folders if f != active_folder] + [active_folder]
+
+    for folder in folders:
         kind_dir = orca_paths.user_root_dir() / folder / kind
         if not kind_dir.is_dir():
             continue

@@ -20,6 +20,11 @@ export const api = {
     request(`/profiles/${kind}${compatibleWith ? `?compatible_with=${encodeURIComponent(compatibleWith)}` : ""}`),
   resolvedProfile: (kind, name) => request(`/profiles/${kind}/${encodeURIComponent(name)}/resolved`),
   rawProfile: (kind, name) => request(`/profiles/${kind}/${encodeURIComponent(name)}/raw`),
+  setProfileOverride: (kind, name, field, value) =>
+    request(`/profiles/${kind}/${encodeURIComponent(name)}/override`, {
+      method: "PUT",
+      body: JSON.stringify({ field, value }),
+    }),
 
   spools: () => request("/spools"),
   createSpool: (data) => request("/spools", { method: "POST", body: JSON.stringify(data) }),
