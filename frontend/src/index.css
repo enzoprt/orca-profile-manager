@@ -73,6 +73,46 @@ h1, h2, h3 {
   border-bottom-color: var(--accent);
 }
 
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.app-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-footer-brand img {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.app-footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-footer-meta a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.app-footer-meta a:hover {
+  text-decoration: underline;
+}
+
 button {
   background: var(--panel-2);
   color: var(--text);

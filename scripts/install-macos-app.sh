@@ -13,6 +13,21 @@ APP_DIR="$APPS_DIR/$APP_NAME.app"
 
 mkdir -p "$APPS_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS"
+mkdir -p "$APP_DIR/Contents/Resources"
+
+# Build AppIcon.icns from assets/icon.png (source of truth, versioned in the repo)
+ICON_SRC="$REPO_ROOT/assets/icon.png"
+if [ -f "$ICON_SRC" ]; then
+  ICONSET_DIR="$(mktemp -d)/AppIcon.iconset"
+  mkdir -p "$ICONSET_DIR"
+  for size in 16 32 128 256 512; do
+    sips -z "$size" "$size" "$ICON_SRC" --out "$ICONSET_DIR/icon_${size}x${size}.png" >/dev/null
+    double=$((size * 2))
+    sips -z "$double" "$double" "$ICON_SRC" --out "$ICONSET_DIR/icon_${size}x${size}@2x.png" >/dev/null
+  done
+  iconutil -c icns "$ICONSET_DIR" -o "$APP_DIR/Contents/Resources/AppIcon.icns"
+  rm -rf "$(dirname "$ICONSET_DIR")"
+fi
 
 cat > "$APP_DIR/Contents/MacOS/launch.sh" <<LAUNCH_EOF
 #!/bin/bash
@@ -59,6 +74,10 @@ cat > "$APP_DIR/Contents/Info.plist" <<'PLIST_EOF'
     <string>Orca Profile Manager</string>
     <key>CFBundleDisplayName</key>
     <string>Orca Profile Manager</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

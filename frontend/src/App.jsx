@@ -6,6 +6,7 @@ import SpoolManager from "./components/SpoolManager";
 import NozzleManager from "./components/NozzleManager";
 import CalibrationManager from "./components/CalibrationManager";
 import Journal from "./components/Journal";
+import Footer from "./components/Footer";
 
 const TABS = [
   { id: "library", label: "Library" },
@@ -236,6 +237,8 @@ function App() {
           }}
         />
       )}
+
+      <Footer />
     </div>
   );
 }
